@@ -4,5 +4,5 @@ add_subdirectory(googletest)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 include_directories(../data_structure)
 
-add_executable(Google_Tests_run index_node_test.cpp)
+add_executable(Google_Tests_run index_node_test.cpp data_node_test.cpp)
 target_link_libraries(Google_Tests_run gtest gtest_main)
