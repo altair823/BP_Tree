@@ -16,7 +16,7 @@ using DataNodeShared = std::shared_ptr<_DataNode<Key, Value>>;
 
 namespace DataNode {
   template<typename Key, typename Value>
-  DataNodeShared<Key, Value> create();
+  DataNodeShared<Key, Value> create(DataNodeShared<Key, Value> left = nullptr, DataNodeShared<Key, Value> right = nullptr);
 }
 
 enum class Direction{
@@ -26,23 +26,26 @@ enum class Direction{
 
 template <typename Key, typename Value>
 class _DataNode{
-  friend DataNodeShared<Key, Value> DataNode::create();
+  friend DataNodeShared<Key, Value> DataNode::create(DataNodeShared<Key, Value> left, DataNodeShared<Key, Value> right);
  public:
   DataUnique<Key, Value> get_data(int index);
+  [[nodiscard]] int get_data_count() const {return data.size();}
   Key get_data_key(int index) const {return data[index]->get_key();}
   Value get_data_value(int index) const {return data[index]->get_value();}
+  int search(Key key) const;
   void insert(int index, DataUnique<Key, Value> data);
   void set_siblings(Direction direction, DataNodeShared<Key, Value> data_node_shared);
+  DataNodeShared<Key, Value> get_siblings(Direction direction);
 
  private:
-  _DataNode(): left(nullptr), right(nullptr) {};
+  _DataNode(DataNodeShared<Key, Value> left, DataNodeShared<Key, Value> right): left(left), right(right) {};
   std::vector<DataUnique<Key, Value>> data;
   DataNodeShared<Key, Value> left, right;
 };
 
 template <typename Key, typename Value>
-DataNodeShared<Key, Value> DataNode::create() {
-  std::shared_ptr<_DataNode<Key, Value>> new_data_node(new _DataNode<Key, Value>());
+DataNodeShared<Key, Value> DataNode::create(DataNodeShared<Key, Value> left, DataNodeShared<Key, Value> right) {
+  std::shared_ptr<_DataNode<Key, Value>> new_data_node(new _DataNode<Key, Value>(left, right));
   return new_data_node;
 }
 template<typename Key, typename Value>
@@ -61,10 +64,30 @@ void _DataNode<Key, Value>::set_siblings(Direction direction, DataNodeShared<Key
   }
 }
 template<typename Key, typename Value>
+DataNodeShared<Key, Value> _DataNode<Key, Value>::get_siblings(Direction direction) {
+  switch (direction) {
+    case Direction::Left:
+      return left;
+    case Direction::Right:
+      return right;
+  }
+}
+template<typename Key, typename Value>
 DataUnique<Key, Value> _DataNode<Key, Value>::get_data(int index) {
-  auto d = std::move(data[index]);
+  DataUnique<Key, Value> d = std::move(data[index]);
   data.erase(data.begin() + index);
-  return d;
+  return std::move(d);
+}
+template<typename Key, typename Value>
+int _DataNode<Key, Value>::search(Key key) const {
+  int index = 0;
+  for (auto& d: data){
+    if (d->get_key() >= key){
+      break;
+    }
+    index++;
+  }
+  return index;
 }
 
 #endif //BP_TREE_DATA_STRUCTURE_DATA_NODE_H_
