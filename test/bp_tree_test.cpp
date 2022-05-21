@@ -4,13 +4,17 @@
 
 #include <gtest/gtest.h>
 #include <bp_tree.h>
+#include <random>
+#include <algorithm>
 
 TEST(BPTreeTest, InsertTest){
-  BPTree<int, int> bp_tree(4, 2);
+  BPTree<int, int> bp_tree(20, 20);
   std::vector<DataUnique<int, int>> data;
-  for (int i = 0; i < 25; i++){
+  for (int i = 0; i < 2500; i++){
     data.push_back(Data::create(i, i));
   }
+  auto rng = std::default_random_engine {};
+  std::shuffle(data.begin(), data.end(), rng);
   for (auto& d: data){
     bp_tree.insert(std::move(d));
   }

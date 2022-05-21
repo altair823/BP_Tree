@@ -120,23 +120,32 @@ void BPTree<Key, Value>::split_keys(IndexNodeShared<Key, Value> parent, IndexNod
   for (int i = 0; i < current->get_keys_count() / 2; ++i) {
     left_node->insert(left_node->get_keys_count(), current->get_key(i));
   }
-  for (int i = 0; i < current->get_pointers_count() / 2; i++) {
+  for (int i = 0; i <= current->get_pointers_count() / 2; i++) {
     left_node->set_pointer(i, current->get_pointer(i));
   }
   for (int i = current->get_keys_count() / 2 + 1; i < current->get_keys_count(); i++) {
     right_node->insert(right_node->get_keys_count(), current->get_key(i));
   }
-  for (int i = current->get_pointers_count() / 2; i < current->get_pointers_count(); ++i) {
-    right_node->set_pointer(i - current->get_pointers_count() / 2, current->get_pointer(i));
+  for (int i = current->get_pointers_count() / 2 + 1; i < current->get_pointers_count(); ++i) {
+    right_node->set_pointer(i - (current->get_pointers_count() / 2 + 1), current->get_pointer(i));
   }
   if (current->is_leaf()) {
-    for (int i = 0; i < current->get_data_node_count() / 2; i++) {
+    for (int i = 0; i <= current->get_data_node_count() / 2; i++) {
       left_node->set_data_node(i, current->get_data_node(i));
     }
-    for (int i = current->get_data_node_count() / 2; i < current->get_data_node_count(); ++i) {
-      right_node->set_data_node(i - current->get_data_node_count() / 2, current->get_data_node(i));
+    for (int i = current->get_data_node_count() / 2 + 1; i < current->get_data_node_count(); ++i) {
+      right_node->set_data_node(i - (current->get_data_node_count() / 2 + 1), current->get_data_node(i));
     }
   }
+
+  if (current->is_leaf()){
+    left_node->set_leaf(LEAF);
+    right_node->set_leaf(LEAF);
+  } else {
+    left_node->set_leaf(NOT_LEAF);
+    right_node->set_leaf(NOT_LEAF);
+  }
+
   int index = parent->search_key(new_key);
   parent->insert(index, new_key);
   parent->set_pointer(index, left_node);
@@ -150,23 +159,26 @@ void BPTree<Key, Value>::split_head(IndexNodeShared<Key, Value> current_head) {
     auto new_head = IndexNode::create<Key, Value>();
     auto left_node = IndexNode::create<Key, Value>();
     auto right_node = IndexNode::create<Key, Value>();
+    auto key_index = current_head->get_keys_count() / 2;
     for (int i = 0; i < current_head->get_keys_count() / 2; ++i) {
       left_node->insert(left_node->get_keys_count(), current_head->get_key(i));
     }
-    for (int i = 0; i < current_head->get_pointers_count() / 2; i++) {
+    for (int i = 0; i <= current_head->get_pointers_count() / 2; i++) {
       left_node->set_pointer(i, current_head->get_pointer(i));
-    }
-    for (int i = 0; i < current_head->get_data_node_count() / 2; i++) {
-      left_node->set_data_node(i, current_head->get_data_node(i));
     }
     for (int i = current_head->get_keys_count() / 2 + 1; i < current_head->get_keys_count(); i++) {
       right_node->insert(right_node->get_keys_count(), current_head->get_key(i));
     }
-    for (int i = current_head->get_pointers_count() / 2; i < current_head->get_pointers_count(); ++i) {
-      right_node->set_pointer(i - current_head->get_pointers_count() / 2, current_head->get_pointer(i));
+    for (int i = current_head->get_pointers_count() / 2 + 1; i < current_head->get_pointers_count(); ++i) {
+      right_node->set_pointer(i - (current_head->get_pointers_count() / 2 + 1), current_head->get_pointer(i));
     }
-    for (int i = current_head->get_data_node_count() / 2; i < current_head->get_data_node_count(); ++i) {
-      right_node->set_data_node(i - current_head->get_data_node_count() / 2, current_head->get_data_node(i));
+    if (current_head->is_leaf()) {
+      for (int i = 0; i <= current_head->get_data_node_count() / 2; i++) {
+        left_node->set_data_node(i, current_head->get_data_node(i));
+      }
+      for (int i = current_head->get_data_node_count() / 2 + 1; i < current_head->get_data_node_count(); ++i) {
+        right_node->set_data_node(i - (current_head->get_data_node_count() / 2 + 1), current_head->get_data_node(i));
+      }
     }
     new_head->insert(0, current_head->get_key(current_head->get_keys_count() / 2));
     new_head->set_pointer(0, left_node);
