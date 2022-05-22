@@ -6,10 +6,20 @@
 #include <data.h>
 #include <random>
 
-std::vector<DataUnique<int, int>> make_population(int min, int max){
+std::vector<DataUnique<int, int>> make_population_int(int min, int max){
   std::vector<DataUnique<int, int>> data;
-  for (int i = min; i < max; i++){
+  for (int i = min; i <= max; i++){
     data.push_back(Data::create(i, i));
+  }
+  auto rng = std::default_random_engine {};
+  std::shuffle(data.begin(), data.end(), rng);
+  return data;
+}
+
+std::vector<DataUnique<int, std::string>> make_population_string(int min, int max){
+  std::vector<DataUnique<int, std::string>> data;
+  for (int i = min; i <= max; i++){
+    data.push_back(Data::create(i, std::to_string(i)));
   }
   auto rng = std::default_random_engine {};
   std::shuffle(data.begin(), data.end(), rng);

@@ -10,7 +10,7 @@
 TEST(BPTreeTest, InsertTest){
   BPTree<int, int> bp_tree(30, 50);
 
-  auto data = make_population(0, 100000);
+  auto data = make_population_int(0, 100000);
 
   for (auto& d: data){
     bp_tree.insert(std::move(d));
@@ -19,12 +19,14 @@ TEST(BPTreeTest, InsertTest){
 }
 
 TEST(BPTreeTest, SearchTest){
-  BPTree<int, int> bp_tree(3, 3);
+  BPTree<int, std::string> bp_tree(3, 3);
 
-  auto data = make_population(0, 30);
+  auto data = make_population_string(0, 30);
 
   for (auto & i : data){
     bp_tree.insert(std::move(i));
   }
-  bp_tree.search(3).expect("Not Found");
+  auto value = bp_tree.search(3).expect("Not Found");
+  ASSERT_EQ(value, "3");
+  ASSERT_TRUE(bp_tree.search(31).isErr());
 }

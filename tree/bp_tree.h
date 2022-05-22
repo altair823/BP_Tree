@@ -229,7 +229,7 @@ Result<Value, std::string> BPTree<Key, Value>::search(Key key) {
   if (is_empty()){
     return Err(std::string("Tree is empty!"));
   }
-  IndexNodeShared<Key, Value> current_node;
+  IndexNodeShared<Key, Value> current_node = head;
   std::stack<IndexNodeShared<Key, Value>> stack;
   int index;
   do {
@@ -242,7 +242,7 @@ Result<Value, std::string> BPTree<Key, Value>::search(Key key) {
   stack.pop();
   auto current_data_node = current_node->get_data_node(index);
   auto data_index = current_data_node->search(key);
-  if (current_data_node->get_data_key(data_index) == key){
+  if (data_index < current_data_node->get_data_count() && current_data_node->get_data_key(data_index) == key){
     return Ok(current_data_node->get_data_value(data_index));
   } else{
     return Err(std::string("Cannot found the data in key: " + std::to_string(key)));
