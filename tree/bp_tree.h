@@ -7,6 +7,7 @@
 
 #include <index_node.h>
 #include <data_node.h>
+#include "../result/result.h"
 #include <data.h>
 #include <cmath>
 #include <stack>
@@ -18,6 +19,10 @@ class BPTree{
   : head(nullptr), max_key_count(index_degree - 1), min_key_count((int)ceil(((double)index_degree - 1) / 2) - 1),
   max_data_count(data_degree), min_data_count(data_degree / 2){};
   void insert(DataUnique<Key, Value> data);
+  Result<Value, std::string> search(Key key);
+  bool remove(Key key);
+
+  bool is_empty(){return head == nullptr;}
 
   void print() const;
 
@@ -163,24 +168,25 @@ void BPTree<Key, Value>::split_head(IndexNodeShared<Key, Value> current_head) {
     auto left_node = IndexNode::create<Key, Value>();
     auto right_node = IndexNode::create<Key, Value>();
     auto key_index = current_head->get_keys_count() / 2;
-    for (int i = 0; i < current_head->get_keys_count() / 2; ++i) {
+
+    for (int i = 0; i < key_index; ++i) {
       left_node->insert_key(left_node->get_keys_count(), current_head->get_key(i));
     }
-    for (int i = 0; i <= current_head->get_pointers_count() / 2; i++) {
+    for (int i = 0; i <= key_index; i++) {
       left_node->set_pointer(i, current_head->get_pointer(i));
     }
-    for (int i = current_head->get_keys_count() / 2 + 1; i < current_head->get_keys_count(); i++) {
+    for (int i = key_index + 1; i < current_head->get_keys_count(); i++) {
       right_node->insert_key(right_node->get_keys_count(), current_head->get_key(i));
     }
-    for (int i = current_head->get_pointers_count() / 2 + 1; i < current_head->get_pointers_count(); ++i) {
-      right_node->set_pointer(i - (current_head->get_pointers_count() / 2 + 1), current_head->get_pointer(i));
+    for (int i = key_index + 1; i < current_head->get_pointers_count(); ++i) {
+      right_node->set_pointer(i - (key_index + 1), current_head->get_pointer(i));
     }
     if (current_head->is_leaf()) {
-      for (int i = 0; i <= current_head->get_data_node_count() / 2; i++) {
+      for (int i = 0; i <= key_index; i++) {
         left_node->set_data_node(i, current_head->get_data_node(i));
       }
-      for (int i = current_head->get_data_node_count() / 2 + 1; i < current_head->get_data_node_count(); ++i) {
-        right_node->set_data_node(i - (current_head->get_data_node_count() / 2 + 1), current_head->get_data_node(i));
+      for (int i = key_index + 1; i < current_head->get_data_node_count(); ++i) {
+        right_node->set_data_node(i - (key_index + 1), current_head->get_data_node(i));
       }
     }
     new_head->insert_key(0, current_head->get_key(current_head->get_keys_count() / 2));
@@ -216,6 +222,30 @@ void BPTree<Key, Value>::print_node(IndexNodeShared<Key, Value> node, int depth)
   depth++;
   for (int i = 0; i < node->get_pointers_count() && node->is_leaf() == NOT_LEAF; i++){
     print_node(node->get_pointer(i), depth);
+  }
+}
+template<typename Key, typename Value>
+Result<Value, std::string> BPTree<Key, Value>::search(Key key) {
+  if (is_empty()){
+    return Err(std::string("Tree is empty!"));
+  }
+  IndexNodeShared<Key, Value> current_node;
+  std::stack<IndexNodeShared<Key, Value>> stack;
+  int index;
+  do {
+    index = current_node->search_key(key);
+    stack.push(current_node);
+    current_node = current_node->get_pointer(index);
+  } while (current_node != nullptr);
+
+  current_node = stack.top();
+  stack.pop();
+  auto current_data_node = current_node->get_data_node(index);
+  auto data_index = current_data_node->search(key);
+  if (current_data_node->get_data_key(data_index) == key){
+    return Ok(current_data_node->get_data_value(data_index));
+  } else{
+    return Err(std::string("Cannot found the data in key: " + std::to_string(key)));
   }
 }
 

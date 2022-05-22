@@ -3,20 +3,28 @@
 //
 
 #include <gtest/gtest.h>
+#include "test_util.h"
 #include <bp_tree.h>
-#include <random>
 #include <algorithm>
 
 TEST(BPTreeTest, InsertTest){
   BPTree<int, int> bp_tree(30, 50);
-  std::vector<DataUnique<int, int>> data;
-  for (int i = 0; i < 100000; i++){
-    data.push_back(Data::create(i, i));
-  }
-  auto rng = std::default_random_engine {};
-  std::shuffle(data.begin(), data.end(), rng);
+
+  auto data = make_population(0, 100000);
+
   for (auto& d: data){
     bp_tree.insert(std::move(d));
   }
   bp_tree.print();
+}
+
+TEST(BPTreeTest, SearchTest){
+  BPTree<int, int> bp_tree(3, 3);
+
+  auto data = make_population(0, 30);
+
+  for (auto & i : data){
+    bp_tree.insert(std::move(i));
+  }
+  bp_tree.search(3).expect("Not Found");
 }
