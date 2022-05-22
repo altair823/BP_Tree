@@ -13,10 +13,10 @@
 #define NOT_LEAF false
 
 template <typename Key, typename Value>
-class _IndexNode;
+class RawIndexNode;
 
 template <typename Key, typename Value>
-using IndexNodeShared = std::shared_ptr<_IndexNode<Key, Value>>;
+using IndexNodeShared = std::shared_ptr<RawIndexNode<Key, Value>>;
 
 namespace IndexNode{
 template <typename Key, typename Value>
@@ -24,7 +24,7 @@ template <typename Key, typename Value>
 }
 
 template <typename Key, typename Value>
-class _IndexNode{
+class RawIndexNode{
  public:
   Key get_key(int index) const {return keys[index];};
   IndexNodeShared<Key, Value> get_pointer(int index) const {return pointers[index];};
@@ -46,7 +46,7 @@ class _IndexNode{
   friend IndexNodeShared<Key, Value> IndexNode::create();
 
  private:
-  _IndexNode();
+  RawIndexNode();
   std::vector<Key> keys;
   std::vector<IndexNodeShared<Key, Value>> pointers;
   std::vector<DataNodeShared<Key, Value>> data_nodes;
@@ -55,15 +55,15 @@ class _IndexNode{
 
 template<typename Key, typename Value>
 IndexNodeShared<Key, Value> IndexNode::create() {
-  std::shared_ptr<_IndexNode<Key, Value>> new_node(new _IndexNode<Key, Value>());
+  std::shared_ptr<RawIndexNode<Key, Value>> new_node(new RawIndexNode<Key, Value>());
   return new_node;
 }
 template<typename Key, typename Value>
-_IndexNode<Key, Value>::_IndexNode(): is_node_leaf(LEAF) {
+RawIndexNode<Key, Value>::RawIndexNode(): is_node_leaf(LEAF) {
   pointers.push_back(nullptr);
 }
 template<typename Key, typename Value>
-void _IndexNode<Key, Value>::insert_key(int index, Key key) {
+void RawIndexNode<Key, Value>::insert_key(int index, Key key) {
   keys.insert(keys.begin() + index, key);
   pointers.insert(pointers.begin() + index, nullptr);
   if (is_node_leaf){
@@ -71,7 +71,7 @@ void _IndexNode<Key, Value>::insert_key(int index, Key key) {
   }
 }
 template<typename Key, typename Value>
-void _IndexNode<Key, Value>::erase(int key_index, int pointer_index) {
+void RawIndexNode<Key, Value>::erase(int key_index, int pointer_index) {
   if (key_index >= keys.size() || pointer_index >= pointers.size() || key_index < 0 || pointer_index < 0){
     std::cout<<"Wrong index!"<<std::endl;
   }
@@ -79,7 +79,7 @@ void _IndexNode<Key, Value>::erase(int key_index, int pointer_index) {
   pointers.erase(pointers.begin() + pointer_index);
 }
 template<typename Key, typename Value>
-int _IndexNode<Key, Value>::search_key(const Key &key) {
+int RawIndexNode<Key, Value>::search_key(const Key &key) {
   int index = 0;
   for (auto& k: keys){
     if (k >= key){
@@ -90,7 +90,7 @@ int _IndexNode<Key, Value>::search_key(const Key &key) {
   return index;
 }
 template<typename Key, typename Value>
-int _IndexNode<Key, Value>::search_pointer(const IndexNodeShared<Key, Value> &pointer) {
+int RawIndexNode<Key, Value>::search_pointer(const IndexNodeShared<Key, Value> &pointer) {
   auto raw_pointer = pointer.get();
   int index = 0;
   for (auto& p: pointers){
@@ -102,7 +102,7 @@ int _IndexNode<Key, Value>::search_pointer(const IndexNodeShared<Key, Value> &po
   return index;
 }
 template<typename Key, typename Value>
-void _IndexNode<Key, Value>::set_data_node(int index, DataNodeShared<Key, Value> data_node) {
+void RawIndexNode<Key, Value>::set_data_node(int index, DataNodeShared<Key, Value> data_node) {
   if (is_node_leaf){
     if (index >= data_nodes.size()) {
       data_nodes.resize(index + 1);
@@ -116,14 +116,14 @@ void _IndexNode<Key, Value>::set_data_node(int index, DataNodeShared<Key, Value>
   }
 }
 template<typename Key, typename Value>
-void _IndexNode<Key, Value>::erase_data_node(int index) {
+void RawIndexNode<Key, Value>::erase_data_node(int index) {
   if (index < 0 || index >= data_nodes.size()){
     std::cout<<"Wrong index!"<<std::endl;
   }
   data_nodes.erase(data_nodes.begin() + index);
 }
 template<typename Key, typename Value>
-void _IndexNode<Key, Value>::set_leaf(bool is_leaf) {
+void RawIndexNode<Key, Value>::set_leaf(bool is_leaf) {
   this->is_node_leaf = is_leaf;
   if (is_leaf == NOT_LEAF){
     data_nodes.clear();

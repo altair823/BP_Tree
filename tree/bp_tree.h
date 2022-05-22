@@ -18,9 +18,6 @@ class BPTree{
   : head(nullptr), max_key_count(index_degree - 1), min_key_count((int)ceil(((double)index_degree - 1) / 2) - 1),
   max_data_count(data_degree), min_data_count(data_degree / 2){};
   void insert(DataUnique<Key, Value> data);
-  void split_data(IndexNodeShared<Key, Value> parent, int data_node_index);
-  void split_head(IndexNodeShared<Key, Value> current);
-  void split_keys(IndexNodeShared<Key, Value> parent, IndexNodeShared<Key, Value> current);
 
   void print() const;
 
@@ -29,6 +26,10 @@ class BPTree{
   DataNodeShared<Key, Value> data_head;
   int max_key_count, min_key_count;
   int max_data_count, min_data_count;
+
+  void split_data(IndexNodeShared<Key, Value> parent, int data_node_index);
+  void split_head(IndexNodeShared<Key, Value> current);
+  void split_keys(IndexNodeShared<Key, Value> parent, IndexNodeShared<Key, Value> current);
 
   void print_node(IndexNodeShared<Key, Value> node, int depth) const;
 

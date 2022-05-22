@@ -8,7 +8,7 @@
 #include <algorithm>
 
 TEST(BPTreeTest, InsertTest){
-  BPTree<int, int> bp_tree(20, 20);
+  BPTree<int, int> bp_tree(30, 50);
   std::vector<DataUnique<int, int>> data;
   for (int i = 0; i < 100000; i++){
     data.push_back(Data::create(i, i));
