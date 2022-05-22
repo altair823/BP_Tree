@@ -37,7 +37,7 @@ class _IndexNode{
   void set_pointer(int index, const IndexNodeShared<Key, Value> &pointer) {pointers[index] = pointer;};
   void set_data_node(int index, DataNodeShared<Key, Value> data_node);
   void set_leaf(bool is_leaf);
-  void insert(int index, Key key);
+  void insert_key(int index, Key key);
   void erase(int key_index, int pointer_index);
   void erase_data_node(int index);
   int search_key(const Key &key);
@@ -63,9 +63,12 @@ _IndexNode<Key, Value>::_IndexNode(): is_node_leaf(LEAF) {
   pointers.push_back(nullptr);
 }
 template<typename Key, typename Value>
-void _IndexNode<Key, Value>::insert(int index, Key key) {
+void _IndexNode<Key, Value>::insert_key(int index, Key key) {
   keys.insert(keys.begin() + index, key);
   pointers.insert(pointers.begin() + index, nullptr);
+  if (is_node_leaf){
+    data_nodes.insert(data_nodes.begin() + index, nullptr);
+  }
 }
 template<typename Key, typename Value>
 void _IndexNode<Key, Value>::erase(int key_index, int pointer_index) {
@@ -101,9 +104,7 @@ int _IndexNode<Key, Value>::search_pointer(const IndexNodeShared<Key, Value> &po
 template<typename Key, typename Value>
 void _IndexNode<Key, Value>::set_data_node(int index, DataNodeShared<Key, Value> data_node) {
   if (is_node_leaf){
-    if (index == 0){
-      data_nodes.push_back(data_node);
-    } else if (index >= data_nodes.size()) {
+    if (index >= data_nodes.size()) {
       data_nodes.resize(index + 1);
       data_nodes[index] = data_node;
     } else {

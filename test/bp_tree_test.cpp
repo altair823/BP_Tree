@@ -10,7 +10,7 @@
 TEST(BPTreeTest, InsertTest){
   BPTree<int, int> bp_tree(20, 20);
   std::vector<DataUnique<int, int>> data;
-  for (int i = 0; i < 2500; i++){
+  for (int i = 0; i < 100000; i++){
     data.push_back(Data::create(i, i));
   }
   auto rng = std::default_random_engine {};

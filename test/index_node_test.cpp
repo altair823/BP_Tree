@@ -12,7 +12,7 @@ TEST(IndexNodeTest, KeySearchTest){
     keys.push_back(i);
   }
   for (auto& k: keys){
-    node->insert(0, k);
+    node->insert_key(0, k);
   }
   auto index = node->search_key(3);
   ASSERT_EQ(index, 2);
@@ -25,7 +25,7 @@ TEST(IndexNodeTest, PointerSearchTest){
     keys.push_back(i);
   }
   for (auto& k: keys){
-    node->insert(0, k);
+    node->insert_key(0, k);
   }
   auto target_node = IndexNode::create<int, int>();
   node->set_pointer(3, target_node);
