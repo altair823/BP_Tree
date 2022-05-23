@@ -32,10 +32,11 @@ class _DataNode{
   [[nodiscard]] int get_data_count() const {return data.size();}
   Key get_data_key(int index) const {return data[index]->get_key();}
   Value get_data_value(int index) const {return data[index]->get_value();}
-  int search(Key key) const;
-  void insert(int index, DataUnique<Key, Value> data);
   void set_siblings(Direction direction, DataNodeShared<Key, Value> data_node_shared);
   DataNodeShared<Key, Value> get_siblings(Direction direction);
+  int search(Key key) const;
+  void insert(int index, DataUnique<Key, Value> data);
+  void erase(int index);
 
  private:
   _DataNode(DataNodeShared<Key, Value> left, DataNodeShared<Key, Value> right): left(left), right(right) {};
@@ -88,6 +89,15 @@ int _DataNode<Key, Value>::search(Key key) const {
     index++;
   }
   return index;
+}
+template<typename Key, typename Value>
+void _DataNode<Key, Value>::erase(int index) {
+  if (index < 0 || index >= data.size()) {
+    std::cout<<"Wrong index!"<<std::endl;
+    exit(1);
+  } else {
+    data.erase(data.begin() + index);
+  }
 }
 
 #endif //BP_TREE_DATA_STRUCTURE_DATA_NODE_H_

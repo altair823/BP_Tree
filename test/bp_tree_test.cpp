@@ -15,18 +15,25 @@ TEST(BPTreeTest, InsertTest){
   for (auto& d: data){
     bp_tree.insert(std::move(d));
   }
-  bp_tree.print();
+  //bp_tree.print();
 }
 
 TEST(BPTreeTest, SearchTest){
   BPTree<int, std::string> bp_tree(3, 3);
-
   auto data = make_population_string(0, 30);
-
   for (auto & i : data){
     bp_tree.insert(std::move(i));
   }
   auto value = bp_tree.search(3).expect("Not Found");
   ASSERT_EQ(value, "3");
   ASSERT_TRUE(bp_tree.search(31).isErr());
+}
+
+TEST(BPTreeTest, RemoveTest){
+  BPTree<int, std::string> bp_tree(3, 3);
+  auto data = make_population_string(0, 30);
+  for (auto & i : data){
+    bp_tree.insert(std::move(i));
+  }
+  ASSERT_TRUE(bp_tree.remove(3));
 }

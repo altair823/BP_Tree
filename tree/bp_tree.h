@@ -13,6 +13,15 @@
 #include <stack>
 
 template <typename Key, typename Value>
+struct TargetLeaf {
+  TargetLeaf(IndexNodeShared<Key, Value> leaf_index_node, int data_node_index, std::stack<IndexNodeShared<Key, Value>> parents)
+  : leaf_index_node(leaf_index_node), data_node_index(data_node_index), parents(std::move(parents)){}
+  IndexNodeShared<Key, Value> leaf_index_node;
+  int data_node_index;
+  std::stack<IndexNodeShared<Key, Value>> parents;
+};
+
+template <typename Key, typename Value>
 class BPTree{
  public:
   explicit BPTree(int index_degree, int data_degree)
@@ -23,7 +32,6 @@ class BPTree{
   bool remove(Key key);
 
   bool is_empty(){return head == nullptr;}
-
   void print() const;
 
  private:
@@ -32,6 +40,8 @@ class BPTree{
   int max_key_count, min_key_count;
   int max_data_count, min_data_count;
 
+  TargetLeaf<Key, Value> search_to_leaf(Key key);
+
   void split_data(IndexNodeShared<Key, Value> parent, int data_node_index);
   void split_head(IndexNodeShared<Key, Value> current);
   void split_keys(IndexNodeShared<Key, Value> parent, IndexNodeShared<Key, Value> current);
@@ -39,6 +49,21 @@ class BPTree{
   void print_node(IndexNodeShared<Key, Value> node, int depth) const;
 
 };
+
+template<typename Key, typename Value>
+TargetLeaf<Key, Value> BPTree<Key, Value>::search_to_leaf(Key key) {
+  std::stack<IndexNodeShared<Key, Value>> stack;
+  IndexNodeShared<Key, Value> current_node = head;
+  int index;
+  do {
+    index = current_node->search_key(key);
+    stack.push(current_node);
+    current_node = current_node->get_pointer(index);
+  } while (current_node != nullptr);
+  current_node = stack.top();
+  stack.pop();
+  return TargetLeaf<Key, Value>(current_node, index, stack);
+}
 template<typename Key, typename Value>
 void BPTree<Key, Value>::insert(DataUnique<Key, Value> data) {
   if (head == nullptr){
@@ -54,18 +79,13 @@ void BPTree<Key, Value>::insert(DataUnique<Key, Value> data) {
     head->get_data_node(1)->set_siblings(Direction::Left, head->get_data_node(0));
     head->get_data_node(1)->set_siblings(Direction::Right, nullptr);
   } else {
-    std::stack<IndexNodeShared<Key, Value>> stack;
-    Key key = data->get_key();
-    IndexNodeShared<Key, Value> current_node = head;
-    int index = 0;
-    do {
-      index = current_node->search_key(key);
-      stack.push(current_node);
-      current_node = current_node->get_pointer(index);
-    } while (current_node != nullptr);
 
-    current_node = stack.top();
-    stack.pop();
+    Key key = data->get_key();
+    auto target_leaf = search_to_leaf(key);
+    std::stack<IndexNodeShared<Key, Value>> parents = target_leaf.parents;
+    IndexNodeShared<Key, Value> current_node = target_leaf.leaf_index_node;
+    int index = target_leaf.data_node_index;
+
     auto current_data_node = current_node->get_data_node(index);
     int data_index = current_data_node->search(key);
     current_data_node->insert(data_index, std::move(data));
@@ -77,10 +97,10 @@ void BPTree<Key, Value>::insert(DataUnique<Key, Value> data) {
           split_head(current_node);
           return;
         } else {
-          split_keys(stack.top(), current_node);
+          split_keys(parents.top(), current_node);
         }
-        current_node = stack.top();
-        stack.pop();
+        current_node = parents.top();
+        parents.pop();
       }
     }
   }
@@ -229,17 +249,10 @@ Result<Value, std::string> BPTree<Key, Value>::search(Key key) {
   if (is_empty()){
     return Err(std::string("Tree is empty!"));
   }
-  IndexNodeShared<Key, Value> current_node = head;
-  std::stack<IndexNodeShared<Key, Value>> stack;
-  int index;
-  do {
-    index = current_node->search_key(key);
-    stack.push(current_node);
-    current_node = current_node->get_pointer(index);
-  } while (current_node != nullptr);
+  auto target_leaf = search_to_leaf(key);
+  IndexNodeShared<Key, Value> current_node = target_leaf.leaf_index_node;
+  int index = target_leaf.data_node_index;
 
-  current_node = stack.top();
-  stack.pop();
   auto current_data_node = current_node->get_data_node(index);
   auto data_index = current_data_node->search(key);
   if (data_index < current_data_node->get_data_count() && current_data_node->get_data_key(data_index) == key){
@@ -247,6 +260,29 @@ Result<Value, std::string> BPTree<Key, Value>::search(Key key) {
   } else{
     return Err(std::string("Cannot found the data in key: " + std::to_string(key)));
   }
+}
+template<typename Key, typename Value>
+bool BPTree<Key, Value>::remove(Key key) {
+  if (is_empty()){
+    return false;
+  }
+
+  auto target_leaf = search_to_leaf(key);
+  IndexNodeShared<Key, Value> current_node = target_leaf.leaf_index_node;
+  std::stack<IndexNodeShared<Key, Value>> parents = target_leaf.parents;
+  int index = target_leaf.data_node_index;
+
+  auto current_data_node = current_node->get_data_node(index);
+  auto data_index = current_data_node->search(key);
+  if (data_index < current_data_node->get_data_count() && current_data_node->get_data_key(data_index) == key){
+    current_data_node->erase(data_index);
+    if (current_data_node->get_data_count() < min_data_count){
+
+    }
+  } else{
+    return false;
+  }
+  return true;
 }
 
 #endif //BP_TREE_TREE_BP_TREE_H_

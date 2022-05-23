@@ -74,6 +74,7 @@ template<typename Key, typename Value>
 void RawIndexNode<Key, Value>::erase(int key_index, int pointer_index) {
   if (key_index >= keys.size() || pointer_index >= pointers.size() || key_index < 0 || pointer_index < 0){
     std::cout<<"Wrong index!"<<std::endl;
+    exit(1);
   }
   keys.erase(keys.begin() + key_index);
   pointers.erase(pointers.begin() + pointer_index);
@@ -119,6 +120,7 @@ template<typename Key, typename Value>
 void RawIndexNode<Key, Value>::erase_data_node(int index) {
   if (index < 0 || index >= data_nodes.size()){
     std::cout<<"Wrong index!"<<std::endl;
+    exit(1);
   }
   data_nodes.erase(data_nodes.begin() + index);
 }
