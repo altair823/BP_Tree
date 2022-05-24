@@ -18,9 +18,15 @@ class RawIndexNode;
 template <typename Key, typename Value>
 using IndexNodeShared = std::shared_ptr<RawIndexNode<Key, Value>>;
 
-namespace IndexNode{
 template <typename Key, typename Value>
-  IndexNodeShared<Key, Value> create();
+class IndexNode{
+ public:
+  static IndexNodeShared<Key, Value> create();
+};
+template<typename Key, typename Value>
+IndexNodeShared<Key, Value> IndexNode<Key, Value>::create() {
+  std::shared_ptr<RawIndexNode<Key, Value>> new_node(new RawIndexNode<Key, Value>());
+  return new_node;
 }
 
 template <typename Key, typename Value>
@@ -43,7 +49,7 @@ class RawIndexNode{
   int search_key(const Key &key);
   int search_pointer(const IndexNodeShared<Key, Value> &pointer);
 
-  friend IndexNodeShared<Key, Value> IndexNode::create();
+  friend class IndexNode<Key, Value>;
 
  private:
   RawIndexNode();
@@ -53,11 +59,6 @@ class RawIndexNode{
   bool is_node_leaf;
 };
 
-template<typename Key, typename Value>
-IndexNodeShared<Key, Value> IndexNode::create() {
-  std::shared_ptr<RawIndexNode<Key, Value>> new_node(new RawIndexNode<Key, Value>());
-  return new_node;
-}
 template<typename Key, typename Value>
 RawIndexNode<Key, Value>::RawIndexNode(): is_node_leaf(LEAF) {
   pointers.push_back(nullptr);

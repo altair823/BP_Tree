@@ -8,29 +8,30 @@
 #include <memory>
 
 template <typename Key, typename Value>
-class _Data;
+class RawData;
 
-namespace Data {
-  template<typename Key, typename Value>
-  std::unique_ptr<_Data<Key, Value>> create(Key key, Value value) {
-    std::unique_ptr<::_Data<Key, Value>> new_data(new _Data<Key, Value>(key, value));
+template<typename Key, typename Value>
+class Data {
+ public:
+  static std::unique_ptr<RawData<Key, Value>> create(Key key, Value value) {
+    std::unique_ptr<::RawData<Key, Value>> new_data(new RawData<Key, Value>(key, value));
     return new_data;
   }
-}
+};
 
 template <typename Key, typename Value>
-class _Data{
-  friend std::unique_ptr<_Data<Key, Value>> Data::create(Key key, Value value);
+class RawData{
+  friend class Data<Key, Value>;
  public:
   Key get_key(){return key;}
   Value get_value(){return value;}
  private:
-  _Data(Key key, Value value): key(key), value(value){}
+  RawData(Key key, Value value): key(key), value(value){}
   Key key;
   Value value;
 };
 
 template <typename Key, typename Value>
-using DataUnique = std::unique_ptr<_Data<Key, Value>>;
+using DataUnique = std::unique_ptr<RawData<Key, Value>>;
 
 #endif //BP_TREE_DATA_STRUCTURE_DATA_H_

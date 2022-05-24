@@ -47,9 +47,8 @@ class BPTree{
   void split_keys(IndexNodeShared<Key, Value> parent, IndexNodeShared<Key, Value> current);
 
   void solve_data(IndexNodeShared<Key, Value> parent_index_node, int data_node_index);
-
-
-  void print_node(IndexNodeShared<Key, Value> node, int depth) const;
+  void print_index_node(IndexNodeShared<Key, Value> node, int depth) const;
+  void print_data_node(DataNodeShared<Key, Value> node, int depth) const;
 
 };
 
@@ -70,11 +69,11 @@ TargetLeaf<Key, Value> BPTree<Key, Value>::search_to_leaf(Key key) {
 template<typename Key, typename Value>
 void BPTree<Key, Value>::insert(DataUnique<Key, Value> data) {
   if (head == nullptr){
-    head = IndexNode::create<Key, Value>();
+    head = IndexNode<Key, Value>::create();
     head->insert_key(0, data->get_key());
-    auto data_node = DataNode::create<Key, Value>();
+    auto data_node = DataNode<Key, Value>::create();
     data_node->insert(0, std::move(data));
-    head->set_data_node(0, DataNode::create<Key, Value>());
+    head->set_data_node(0, DataNode<Key, Value>::create());
     head->set_data_node(1, data_node);
     data_head = head->get_data_node(0);
     head->get_data_node(0)->set_siblings(Direction::Left, nullptr);
@@ -112,8 +111,8 @@ void BPTree<Key, Value>::insert(DataUnique<Key, Value> data) {
 template<typename Key, typename Value>
 void BPTree<Key, Value>::split_data(IndexNodeShared<Key, Value> parent, int data_node_index) {
   auto data_node = parent->get_data_node(data_node_index);
-  auto data_node_left = DataNode::create<Key, Value>();
-  auto data_node_right = DataNode::create<Key, Value>();
+  auto data_node_left = DataNode<Key, Value>::create();
+  auto data_node_right = DataNode<Key, Value>::create();
 
   auto data_count = data_node->get_data_count();
   for (int i = 0; i < data_count / 2; i++){
@@ -144,8 +143,8 @@ void BPTree<Key, Value>::split_data(IndexNodeShared<Key, Value> parent, int data
 template<typename Key, typename Value>
 void BPTree<Key, Value>::split_keys(IndexNodeShared<Key, Value> parent, IndexNodeShared<Key, Value> current) {
   Key new_key = current->get_key(current->get_keys_count() / 2);
-  auto left_node = IndexNode::create<Key, Value>();
-  auto right_node = IndexNode::create<Key, Value>();
+  auto left_node = IndexNode<Key, Value>::create();
+  auto right_node = IndexNode<Key, Value>::create();
   auto key_index = current->get_keys_count() / 2;
   for (int i = 0; i < key_index; ++i) {
     left_node->insert_key(left_node->get_keys_count(), current->get_key(i));
@@ -187,9 +186,9 @@ void BPTree<Key, Value>::split_head(IndexNodeShared<Key, Value> current_head) {
   if (current_head != head){
     return;
   } else {
-    auto new_head = IndexNode::create<Key, Value>();
-    auto left_node = IndexNode::create<Key, Value>();
-    auto right_node = IndexNode::create<Key, Value>();
+    auto new_head = IndexNode<Key, Value>::create();
+    auto left_node = IndexNode<Key, Value>::create();
+    auto right_node = IndexNode<Key, Value>::create();
     auto key_index = current_head->get_keys_count() / 2;
 
     for (int i = 0; i < key_index; ++i) {
@@ -228,10 +227,10 @@ void BPTree<Key, Value>::split_head(IndexNodeShared<Key, Value> current_head) {
 }
 template<typename Key, typename Value>
 void BPTree<Key, Value>::print() const {
-  this->print_node(head, 1);
+  this->print_index_node(head, 1);
 }
 template<typename Key, typename Value>
-void BPTree<Key, Value>::print_node(IndexNodeShared<Key, Value> node, int depth) const {
+void BPTree<Key, Value>::print_index_node(IndexNodeShared<Key, Value> node, int depth) const {
   if (node == nullptr){
     return;
   }
@@ -244,9 +243,27 @@ void BPTree<Key, Value>::print_node(IndexNodeShared<Key, Value> node, int depth)
   std::cout << std::endl;
   depth++;
   for (int i = 0; i < node->get_pointers_count() && node->is_leaf() == NOT_LEAF; i++){
-    print_node(node->get_pointer(i), depth);
+    print_index_node(node->get_pointer(i), depth);
+  }
+  for (int i = 0; node->is_leaf() == LEAF && i < node->get_data_node_count(); i++){
+    print_data_node(node->get_data_node(i), depth);
   }
 }
+template<typename Key, typename Value>
+void BPTree<Key, Value>::print_data_node(DataNodeShared<Key, Value> node, int depth) const {
+  std::cout << "Level: " << depth << std::endl;
+  std::cout << "key: ";
+  for (int i = 0; i < node->get_data_count(); i++){
+     std::cout << node->get_data_key(i) << "  ";
+  }
+  std::cout << "\nvalue: ";
+  for (int i = 0; i < node->get_data_count(); i++){
+     std::cout << node->get_data_value(i) << "  ";
+  }
+  std::cout << std::endl;
+  std::cout << std::endl;
+}
+
 template<typename Key, typename Value>
 Result<Value, std::string> BPTree<Key, Value>::search(Key key) {
   if (is_empty()){
