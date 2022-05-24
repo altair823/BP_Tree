@@ -46,6 +46,9 @@ class BPTree{
   void split_head(IndexNodeShared<Key, Value> current);
   void split_keys(IndexNodeShared<Key, Value> parent, IndexNodeShared<Key, Value> current);
 
+  void solve_data(IndexNodeShared<Key, Value> parent_index_node, int data_node_index);
+
+
   void print_node(IndexNodeShared<Key, Value> node, int depth) const;
 
 };
@@ -276,13 +279,20 @@ bool BPTree<Key, Value>::remove(Key key) {
   auto data_index = current_data_node->search(key);
   if (data_index < current_data_node->get_data_count() && current_data_node->get_data_key(data_index) == key){
     current_data_node->erase(data_index);
-    if (current_data_node->get_data_count() < min_data_count){
-
-    }
+    solve_data(current_node, index);
   } else{
     return false;
   }
   return true;
+}
+template<typename Key, typename Value>
+void BPTree<Key, Value>::solve_data(IndexNodeShared<Key, Value> parent_index_node,
+                                    int data_node_index) {
+  auto current_data_node = parent_index_node->get_data_node(data_node_index);
+  if (current_data_node->get_data_count() >= min_data_count){
+    return;
+  }
+//  if (data_node_index)
 }
 
 #endif //BP_TREE_TREE_BP_TREE_H_

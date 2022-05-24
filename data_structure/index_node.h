@@ -83,7 +83,7 @@ template<typename Key, typename Value>
 int RawIndexNode<Key, Value>::search_key(const Key &key) {
   int index = 0;
   for (auto& k: keys){
-    if (k >= key){
+    if (k > key){
       break;
     }
     index++;
