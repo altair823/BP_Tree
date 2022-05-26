@@ -123,10 +123,6 @@ void BPTree<Key, Value>::insert(DataUnique<Key, Value> data) {
 template<typename Key, typename Value>
 void BPTree<Key, Value>::split_data(IndexNodeShared<Key, Value> parent, int data_node_index) {
 
-  if (data_node_index != 0
-  && parent->get_data_node(data_node_index - 1)->get_data_count() < min_data_count){
-    borrow_data_right(parent, data_node_index - 1);
-  }
 
   auto data_node = parent->get_data_node(data_node_index);
   auto data_node_left = DataNode<Key, Value>::create();
@@ -318,7 +314,11 @@ bool BPTree<Key, Value>::remove(Key key) {
   } else {
     return false;
   }
-  if (current_node == head && current_node->get_keys_count() == 0){
+  if (current_node == head
+  && current_node->is_leaf()
+  && current_node->get_keys_count() == 1
+  && current_node->get_data_node(0)->get_data_count() == 0
+  && current_node->get_data_node(1)->get_data_count() == 0){
     head.reset();
   }
   return true;
@@ -327,7 +327,7 @@ template<typename Key, typename Value>
 void BPTree<Key, Value>::solve_data(IndexNodeShared<Key, Value> parent_index_node,
                                     int data_node_index) {
   auto current_data_node = parent_index_node->get_data_node(data_node_index);
-  if (current_data_node->get_data_count() >= min_data_count){
+  if (current_data_node->get_data_count() >= min_data_count || (parent_index_node == head && parent_index_node->get_keys_count() == 1)){
     return;
   } else {
     if (parent_index_node->get_data_node_count() - 1 > data_node_index
@@ -439,7 +439,7 @@ void BPTree<Key, Value>::spin_counterclockwise(IndexNodeShared<Key, Value> paren
   if (right_node->get_keys_count() > min_key_count){
     auto p_key = parent->get_key(current_node_index);
     auto r_key = right_node->get_key(0);
-    current_node->insert_key(current_node->get_keys_count(), p_key);
+    current_node->insert_key(current_node->get_keys_count(), p_key, true);
     parent->set_key(current_node_index, r_key);
     if (current_node->is_leaf()){
       current_node->set_data_node(current_node->get_data_node_count() - 1, right_node->get_data_node(0));
@@ -456,15 +456,17 @@ void BPTree<Key, Value>::merge_index_left(IndexNodeShared<Key, Value> parent, in
   auto current = parent->get_pointer(index);
   auto left = parent->get_pointer(index - 1);
   auto p_key = parent->get_key(index - 1);
+  auto p_start_index = left->get_pointers_count();
+  auto d_start_index = left->get_data_node_count();
   left->insert_key(left->get_keys_count(), p_key, true);
   for (int i = 0; i < current->get_keys_count(); i++){
-    left->insert_key(current->get_keys_count(), current->get_key(i), true);
+    left->insert_key(left->get_keys_count(), current->get_key(i), true);
   }
   for (int i = 0; i < current->get_pointers_count() && !current->is_leaf(); i++){
-    left->set_pointer(left->get_pointers_count() - 1, current->get_pointer(i));
+    left->set_pointer(p_start_index + i, current->get_pointer(i));
   }
   for (int i = 0; i < current->get_data_node_count() && current->is_leaf(); i++){
-    left->set_data_node(left->get_data_node_count() - 1, current->get_data_node(i));
+    left->set_data_node(d_start_index + i, current->get_data_node(i));
   }
   parent->erase(index - 1, index);
 }
@@ -478,10 +480,10 @@ void BPTree<Key, Value>::merge_index_right(IndexNodeShared<Key, Value> parent, i
     right->insert_key(0, current->get_key(current->get_keys_count() - i - 1));
   }
   for (int i = 0; i < current->get_pointers_count() && !current->is_leaf(); i++){
-    right->set_pointer(i, current->get_pointer(current->get_pointers_count() - i - 1));
+    right->set_pointer(i, current->get_pointer(i));
   }
   for (int i = 0; i < current->get_data_node_count() && current->is_leaf(); i++){
-    right->set_data_node(i, current->get_data_node(current->get_data_node_count() - i - 1));
+    right->set_data_node(i, current->get_data_node(i));
   }
   parent->erase(index, index);
 }
