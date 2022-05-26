@@ -39,11 +39,11 @@ class RawIndexNode{
   [[nodiscard]] int get_keys_count() const {return keys.size();}
   [[nodiscard]] int get_pointers_count() const {return pointers.size();}
   [[nodiscard]] int get_data_node_count() const {return data_nodes.size();}
-  void set_key(int index, Key &key) {keys[index] = key;};
+  void set_key(int index, Key key) {keys[index] = key;};
   void set_pointer(int index, const IndexNodeShared<Key, Value> &pointer) {pointers[index] = pointer;};
   void set_data_node(int index, DataNodeShared<Key, Value> data_node);
   void set_leaf(bool is_leaf);
-  void insert_key(int index, Key key);
+  void insert_key(int index, Key key, bool is_node_odd = false);
   void erase(int key_index, int pointer_index);
   void erase_data_node(int index);
   int search_key(const Key &key);
@@ -64,11 +64,18 @@ RawIndexNode<Key, Value>::RawIndexNode(): is_node_leaf(LEAF) {
   pointers.push_back(nullptr);
 }
 template<typename Key, typename Value>
-void RawIndexNode<Key, Value>::insert_key(int index, Key key) {
+void RawIndexNode<Key, Value>::insert_key(int index, Key key, bool is_node_odd) {
   keys.insert(keys.begin() + index, key);
-  pointers.insert(pointers.begin() + index, nullptr);
-  if (is_node_leaf){
-    data_nodes.insert(data_nodes.begin() + index, nullptr);
+  if (!is_node_odd) {
+    pointers.insert(pointers.begin() + index, nullptr);
+    if (is_node_leaf) {
+      data_nodes.insert(data_nodes.begin() + index, nullptr);
+    }
+  } else {
+    pointers.insert(pointers.begin() + index + 1, nullptr);
+    if (is_node_leaf) {
+      data_nodes.insert(data_nodes.begin() + index + 1, nullptr);
+    }
   }
 }
 template<typename Key, typename Value>

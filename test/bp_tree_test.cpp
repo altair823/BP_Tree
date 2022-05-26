@@ -30,12 +30,21 @@ TEST(BPTreeTest, SearchTest){
 }
 
 TEST(BPTreeTest, RemoveTest){
-  BPTree<int, std::string> bp_tree(3, 3);
-  auto data = make_population_string(0, 30, false);
+  BPTree<int, std::string> bp_tree(5, 5);
+  auto data = make_population_string(0, 30, true);
   for (auto & i : data){
     bp_tree.insert(std::move(i));
   }
-  bp_tree.remove(4);
+  std::vector<int> d;
+  for (int i = 0; i < 31; i++){
+    d.push_back(i);
+  }
+  std::random_device rd;
+  std::mt19937 g(rd());
+  std::shuffle(d.begin(), d.end(), g);
+  for (auto& i: d){
+    bp_tree.remove(i);
+  }
   bp_tree.print();
 //  ASSERT_TRUE(bp_tree.remove(3));
 }
