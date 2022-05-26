@@ -47,3 +47,21 @@ TEST(BPTreeTest, RemoveTest){
   bp_tree.print();
   ASSERT_TRUE(bp_tree.is_empty());
 }
+
+TEST(BPTreeTest, RangeSearchTest){
+  int min_key = 0;
+  int max_key = 100000;
+  BPTree<int, std::string> bp_tree(50, 50);
+//  auto data = make_test_population_string();
+  auto data = make_population_string(min_key, max_key);
+  for (auto & i : data){
+    bp_tree.insert(std::move(i));
+  }
+  int begin_key = 100;
+  int end_key = 1000;
+  auto result = bp_tree.search(begin_key, end_key).unwrap();
+  for (int i = 0; i < end_key - begin_key; i++){
+    //std::cout<<result[i]<<std::endl;
+    ASSERT_EQ(result[i], std::to_string(begin_key + i));
+  }
+}

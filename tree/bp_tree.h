@@ -28,8 +28,9 @@ class BPTree{
   : head(nullptr), max_key_count(index_degree - 1), min_key_count((int)ceil(((double)index_degree - 1) / 2)),
   max_data_count(data_degree), min_data_count((int)ceil((double)data_degree / 2)){};
   void insert(DataUnique<Key, Value> data);
-  Result<Value, std::string> search(Key key);
   bool remove(Key key);
+  Result<Value, std::string> search(Key key);
+  Result<std::vector<Value>, std::string> search(Key begin, Key end);
 
   bool is_empty(){return head == nullptr;}
   void print() const;
@@ -486,6 +487,27 @@ void BPTree<Key, Value>::merge_index_right(IndexNodeShared<Key, Value> parent, i
     right->set_data_node(i, current->get_data_node(i));
   }
   parent->erase(index, index);
+}
+template<typename Key, typename Value>
+Result<std::vector<Value>, std::string> BPTree<Key, Value>::search(Key begin, Key end) {
+  if (begin >= end){
+    return Err(std::string("Wrong range!"));
+  } else {
+    auto target = search_to_leaf(begin);
+    auto current_data_node = target.leaf_index_node->get_data_node(target.data_node_index);
+    std::vector<Value> results;
+    while (current_data_node->get_data_key(0) < end){
+      for (int i = current_data_node->search(begin); i < current_data_node->get_data_count() && current_data_node->get_data_key(i) < end; i++){
+        results.push_back(current_data_node->get_data_value(i));
+      }
+      if (current_data_node->get_siblings(Direction::Right) != nullptr) {
+        current_data_node = current_data_node->get_siblings(Direction::Right);
+      } else {
+        break;
+      }
+    }
+    return Ok(results);
+  }
 }
 
 #endif //BP_TREE_TREE_BP_TREE_H_
