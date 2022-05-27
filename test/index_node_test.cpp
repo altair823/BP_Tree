@@ -32,7 +32,3 @@ TEST(IndexNodeTest, PointerSearchTest){
   auto index = node->search_pointer(target_node);
   ASSERT_EQ(index, 3);
 }
-
-TEST(IndexNodeTest, InsertTest){
-
-}

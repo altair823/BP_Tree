@@ -46,7 +46,7 @@ class RawDataNode{
   void erase(int index);
 
  private:
-  RawDataNode(DataNodeShared<Key, Value> left, DataNodeShared<Key, Value> right): left(left), right(right) {};
+  RawDataNode(DataNodeShared<Key, Value> left, DataNodeShared<Key, Value> right): left(left), right(right) {}
   std::vector<DataUnique<Key, Value>> data;
   DataNodeShared<Key, Value> left, right;
 };

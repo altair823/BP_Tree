@@ -5,7 +5,6 @@
 #include <gtest/gtest.h>
 #include "test_util.h"
 #include <bp_tree.h>
-#include <algorithm>
 
 TEST(BPTreeTest, InsertTest){
   BPTree<int, int> bp_tree(30, 50);
@@ -15,7 +14,7 @@ TEST(BPTreeTest, InsertTest){
   for (auto& d: data){
     bp_tree.insert(std::move(d));
   }
-  bp_tree.print();
+  //bp_tree.print();
 }
 
 TEST(BPTreeTest, SearchTest){
@@ -44,7 +43,7 @@ TEST(BPTreeTest, RemoveTest){
       std::cout<<i<<std::endl;
     }
   }
-  bp_tree.print();
+  //bp_tree.print();
   ASSERT_TRUE(bp_tree.is_empty());
 }
 
