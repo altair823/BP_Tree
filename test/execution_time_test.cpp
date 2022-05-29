@@ -15,7 +15,7 @@ using namespace std::chrono;
 
 using namespace std;
 
-int main() {
+int main(int argc, char** argv) {
 
   try {
     auto logger = spdlog::basic_logger_mt("time_logger", "logs/time_log.log");
